@@ -49,3 +49,66 @@
 
 - Extend functionality (e.g., import/export data, enrich events)
 - Common ones: GeoIP, data pipelines
+
+## First steps (Posthog with Next.js)
+
+- Install posthog
+
+```bash
+npm install posthog-js
+```
+
+- Create `posthog.js` utility
+
+```js
+// src/lib/posthog.js
+import posthog from "posthog-js";
+
+if (typeof window !== "undefined") {
+  posthog.init("YOUR_PROJECT_API_KEY", {
+    api_host: "https://app.posthog.com",
+    capture_pageview: false, // We'll handle this manually
+  });
+}
+
+export default posthog;
+```
+
+- Create Analytics component & add it to layout
+
+```js
+// components/Analytics.tsx
+"use client";
+
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import posthog from "@/lib/posthog";
+
+export function Analytics() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    posthog.capture("$pageview");
+  }, [pathname]);
+
+  return null;
+}
+
+// app/layout.tsx
+import { Analytics } from "@/components/Analytics";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode,
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <Analytics />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
